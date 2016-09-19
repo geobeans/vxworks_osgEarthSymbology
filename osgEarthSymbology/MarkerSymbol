@@ -1,0 +1,106 @@
+/* -*-c++-*- */
+/* osgEarth - Dynamic map generation toolkit for OpenSceneGraph
+ * Copyright 2008-2010 Pelican Mapping
+ * http://osgearth.org
+ *
+ * osgEarth is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ */
+
+#ifndef OSGEARTHSYMBOLOGY_MODEL_SYMBOL_H
+#define OSGEARTHSYMBOLOGY_MODEL_SYMBOL_H 1
+
+#include <osgEarth/Common>
+#include <osgEarthSymbology/Symbol>
+#include <osgEarthSymbology/Expression>
+#include <osg/Vec3f>
+
+namespace osgEarth { namespace Symbology
+{
+    /**
+     * The MarkerSymbol describes replacement of geometry with "markers". A marker
+     * it another object like a 3D model (node) or an image.
+     */
+    class OSGEARTHSYMBOLOGY_EXPORT MarkerSymbol : public Symbol
+    {
+    public:
+        /**
+         * Controls the placements of models.
+         */
+        enum Placement
+        {
+            /** Places one model instance at the centroid of the feature. */
+            PLACEMENT_CENTROID,
+
+            /** Places a model instance at each feature point. */
+            PLACEMENT_VERTEX,
+
+            /** Places model instances at regular intervals within/along the feature geometry,
+                according to density. */
+            PLACEMENT_INTERVAL,
+
+            /** Scatters model instances randomly within/along feature, according to density. */
+            PLACEMENT_RANDOM
+        };
+
+    public:
+        MarkerSymbol( const Config& conf =Config() );
+
+        /** URI of the model to use for substitution. */
+        optional<StringExpression>& url() { return _url; }
+        const optional<StringExpression>& url() const { return _url; }        
+
+        /** How to map feature geometry to model placement. (default is PLACEMENT_CENTROID) */
+        optional<Placement>& placement() { return _placement; }
+        const optional<Placement>& placement() const { return _placement; }
+
+        /** For PLACEMENT_RANDOM/INTERVAL, the scattering density in instances per sqkm */
+        optional<float>& density() { return _density; }
+        const optional<float>& density() const { return _density; }
+
+        /** Model instance scale factor */
+        optional<NumericExpression>& scale() { return _scale; }
+        const optional<NumericExpression>& scale() const { return _scale; }
+
+        /** Seeding value for the randomizer */
+        optional<unsigned>& randomSeed() { return _randomSeed; }
+        const optional<unsigned>& randomSeed() const { return _randomSeed; }
+
+    public: // non-serialized properties (for programmatic use only)
+
+        /** Explicit image to use for 2D icon placemet */
+        void setImage( osg::Image* image ) { _image = image; }
+        osg::Image* getImage() const { return _image.get(); }
+
+        /** Explicit model to use for model placement */
+        void setModel( osg::Node* node ) { _node = node; }
+        osg::Node* getNode() const { return _node.get(); }
+
+    public:
+        virtual Config getConfig() const;
+        virtual void mergeConfig( const Config& conf );
+
+    protected:
+        optional<StringExpression>   _url;
+        optional<NumericExpression>  _scale;
+        optional<Placement>          _placement;
+        optional<float>              _density;
+        optional<unsigned>           _randomSeed;
+
+        osg::ref_ptr<osg::Image>     _image;
+        osg::ref_ptr<osg::Node>      _node;
+    };
+
+} } // namespace osgEarth::Symbology
+
+#endif
